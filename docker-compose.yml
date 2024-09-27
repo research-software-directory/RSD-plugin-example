@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2024 Christian Meeßen (GFZ) <christian.meessen@gfz-potsdam.de>
+# SPDX-FileCopyrightText: 2024 Helmholtz Centre Potsdam - GFZ German Research Centre for Geosciences
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Use the same name as in main RSD compose file
+name: rsd
+
+services:
+  dummy-plugin-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - API_ROOT_PATH
+    ports:
+      - 8081:8081
+      - 5678:5678
+    networks:
+      - rsd_net
+    volumes:
+      - ./backend:/app
+    # Uncomment to allow connecting using a debugger in your IDE
+    # entrypoint: "pipenv run python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 main.py"
+
+networks:
+  rsd_net:
+    external: true

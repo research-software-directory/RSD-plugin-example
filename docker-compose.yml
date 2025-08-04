@@ -45,7 +45,7 @@ services:
   # --------------------------------------------------
   database:
     # Official rsd-saas image. You can change to local image for testing purposes
-    image: ghcr.io/research-software-directory/rsd-saas/database:v2.23.0
+    image: ghcr.io/research-software-directory/rsd-saas/database:v4.1.0
     # ports:
       # enable connection from outside (development mode)
       # - "5432:5432"
@@ -62,11 +62,17 @@ services:
       # to remove use: docker compose down --volumes
       # to inspect use: docker volume ls
       - pgdb:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD", "pg_isready", "--username=${POSTGRES_USER}", "--dbname=${POSTGRES_DB}"]
+      interval: 1s
+      retries: 15
+      timeout: 5s
+      start_period: 5s
     networks:
       - net
   backend:
     # Official rsd-saas image. You can change to local image for testing purposes
-    image: ghcr.io/research-software-directory/rsd-saas/backend:v2.23.0
+    image: ghcr.io/research-software-directory/rsd-saas/backend:v4.1.0
     expose:
       - 3500
     environment:
@@ -83,7 +89,7 @@ services:
 
   auth:
     # Official rsd-saas image. You can change to local image for testing purposes
-    image: ghcr.io/research-software-directory/rsd-saas/auth:v2.23.0
+    image: ghcr.io/research-software-directory/rsd-saas/auth:v4.1.0
     # ports:
     #   - 5005:5005
     expose:
@@ -94,33 +100,29 @@ services:
       - POSTGREST_URL
       - RSD_AUTH_COUPLE_PROVIDERS
       - RSD_AUTH_PROVIDERS
-      - RSD_AUTH_USER_MAIL_WHITELIST
       - SURFCONEXT_CLIENT_ID
-      - SURFCONEXT_REDIRECT
       - SURFCONEXT_WELL_KNOWN_URL
-      - SURFCONEXT_SCOPES
       - HELMHOLTZID_CLIENT_ID
-      - HELMHOLTZID_REDIRECT
       - HELMHOLTZID_WELL_KNOWN_URL
       - HELMHOLTZID_SCOPES
-      - HELMHOLTZID_USE_ALLOW_LIST
-      - HELMHOLTZID_ALLOW_LIST
-      - ORCID_CLIENT_ID
-      - ORCID_REDIRECT
-      - ORCID_REDIRECT_COUPLE
-      - ORCID_WELL_KNOWN_URL
-      - ORCID_SCOPES
-      - AZURE_CLIENT_ID
-      - AZURE_REDIRECT
-      - AZURE_WELL_KNOWN_URL
-      - AZURE_SCOPES
-      - AZURE_ORGANISATION
       - HELMHOLTZID_ALLOW_EXTERNAL_USERS
+      - ORCID_CLIENT_ID
+      - ORCID_WELL_KNOWN_URL
+      - AZURE_CLIENT_ID
+      - AZURE_WELL_KNOWN_URL
+      - AZURE_ORGANISATION
+      - AZURE_DISPLAY_NAME
+      - AZURE_DESCRIPTION_HTML
+      - LINKEDIN_CLIENT_ID
+      - LINKEDIN_WELL_KNOWN_URL
       - AUTH_SURFCONEXT_CLIENT_SECRET
       - AUTH_HELMHOLTZID_CLIENT_SECRET
       - AUTH_ORCID_CLIENT_SECRET
       - AUTH_AZURE_CLIENT_SECRET
+      - AUTH_LINKEDIN_CLIENT_SECRET
       - PGRST_JWT_SECRET
+      - RSD_API_ACCESS_TOKEN_ENABLED
+      - HOST_URL
     depends_on:
       - database
       - backend
@@ -135,41 +137,27 @@ services:
       ]
 
   frontend:
-    # Official rsd-saas image. You can change to local image for testing purposes
-    image: ghcr.io/research-software-directory/rsd-saas/frontend:v2.23.0
+    # Official rsd-saas image.
+    image: ghcr.io/research-software-directory/rsd-saas/frontend:v4.1.0
+    # Use local image for testing purposes
+    # image: rsd/frontend:4.1.1
+    # pull_policy: if_not_present
     environment:
       # it uses values from .env file
       - POSTGREST_URL
       - PGRST_JWT_SECRET
-      - RSD_AUTH_URL
-      - RSD_AUTH_PROVIDERS
-      - RSD_AUTH_COUPLE_PROVIDERS
       - RSD_REVERSE_PROXY_URL
+      - RSD_AUTH_URL
+      - CROSSREF_CONTACT_EMAIL
       - MATOMO_URL
       - MATOMO_ID
-      - SURFCONEXT_CLIENT_ID
-      - SURFCONEXT_REDIRECT
-      - SURFCONEXT_WELL_KNOWN_URL
-      - SURFCONEXT_SCOPES
-      - SURFCONEXT_RESPONSE_MODE
-      - HELMHOLTZID_CLIENT_ID
-      - HELMHOLTZID_REDIRECT
-      - HELMHOLTZID_WELL_KNOWN_URL
-      - HELMHOLTZID_SCOPES
-      - HELMHOLTZID_RESPONSE_MODE
+      # link your orcid account
+      - RSD_AUTH_COUPLE_PROVIDERS
       - ORCID_CLIENT_ID
-      - ORCID_REDIRECT
-      - ORCID_REDIRECT_COUPLE
       - ORCID_WELL_KNOWN_URL
-      - ORCID_SCOPES
-      - AZURE_CLIENT_ID
-      - AZURE_REDIRECT
-      - AZURE_WELL_KNOWN_URL
-      - AZURE_SCOPES
-      - AZURE_LOGIN_PROMPT
-      - AZURE_DISPLAY_NAME
-      - AZURE_DESCRIPTION_HTML
-      - CROSSREF_CONTACT_EMAIL
+      # link your linkedin account
+      - LINKEDIN_CLIENT_ID
+      - LINKEDIN_WELL_KNOWN_URL
     expose:
       - 3000
     depends_on:
@@ -186,8 +174,11 @@ services:
       - net
 
   documentation:
-    # Official rsd-saas image. You can change to local image for testing purposes
-    image: ghcr.io/research-software-directory/rsd-saas/documentation:v2.23.0
+    # Official rsd-saas image
+    image: ghcr.io/research-software-directory/rsd-saas/documentation:v4.1.0
+    # Use local image for testing purposes
+    # image: rsd/documentation:3.0.0
+    # pull_policy: if_not_present
     expose:
       - 80
     networks:

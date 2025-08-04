@@ -54,4 +54,4 @@ You can try using different official RSD SAAS images. However in some cases, dur
 - Copy `.env.example ` to `.env`
 - Provide secrets at the bottom of the .env file
 - Build core RSD images `docker compose build`
-- Update the docker-compose file in this repo with the proper image and versions (you can copy this info from the docker compose file of core RSD repo).
+- Update the docker-compose file in this repo with the proper image and versions. You can copy this info from the docker compose file of core RSD repo.
